@@ -3,11 +3,13 @@
 """
 import random
 import pygame
-
+import time
 
 # Constantes de Configuração do jogo
 DISPLAY_WIDTH = 800
 DISPLAY_HEIGHT = 1200
+
+CLOCK =  pygame.time.Clock()
 
 def start_game():
     """Inicializa o jogo
@@ -23,6 +25,23 @@ def end_game():
     """
     print("Saindo do jogo!!!")
     pygame.quit()
+
+def set_frame_rate(fps):
+    """Define a velocidade de execução do jogo.
+
+    Args:
+        fps (int): Define o fps do jogo
+    """
+    CLOCK.tick(fps)
+
+def treat_events():
+    """Trata os eventos ocorridos entre cada quadro.
+    """
+    for event in pygame.event.get():
+        if event.type == pygame.QUIT:
+            return True
+    
+    return False
 
 
 def create_cards(valor):
@@ -51,14 +70,12 @@ def create_cards(valor):
     }
     return carta
 
-
-
 def create_objects():
     """Cria os objetos do jogo
     """
     baralho = {}
     numeros = [0, 1, 2, 3, 4, 5, 6, 7, 8, 9] * 2
-    cartas_viradas = []
+    
 
     random.shuffle(numeros)
 
@@ -76,6 +93,11 @@ def run_loop(display):
         display (pygame.surface): [display do jogo]
     """
     objects = create_objects()
+    cartas_viradas = []
+
+    while True:
+
+        set_frame_rate(60)
 
 def main():
     """Ponto de entrada do jogo
