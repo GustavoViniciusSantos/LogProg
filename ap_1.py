@@ -3,13 +3,19 @@
 """
 import random
 import pygame
-import time
+
 
 # Constantes de Configuração do jogo
 DISPLAY_WIDTH = 800
 DISPLAY_HEIGHT = 1200
 
-CLOCK =  pygame.time.Clock()
+CLOCK = pygame.time.Clock()
+
+COLORS = {
+    "black":(0, 0, 0),
+    "white":(255, 255, 255),
+    "red": (255, 0, 0)
+}
 
 def start_game():
     """Inicializa o jogo
@@ -34,15 +40,57 @@ def set_frame_rate(fps):
     """
     CLOCK.tick(fps)
 
-def treat_events():
+
+
+def is_inside_card(baralho, pos_mouse):
+    """Verifica se o clique foi dentro da carta
+
+    Args:
+        baralho (dict): dicionário contendo todas as cartas
+        pos_mouse (list): lista em que o primeiro elemento é a pos_x \
+        e o segundo elemento é a pos_y.
+    """
+    for carta in baralho:
+        if in_range(pos_mouse[0], carta["posicao"][0], carta["posicao"][1])\
+            and in_range(pos_mouse[1], carta["posicao"][2], carta["posicao"][3]):
+            return True
+    return False
+
+def card_selected(baralho, pos_mouse):
+    """Retorna a carta escolhida
+
+    Args:
+        baralho (dict): dicionário contendo todas as cartas
+        pos_mouse ([type]): lista em que o primeiro elemento é a pos_x \
+        e o segundo elemento é a pos_y.
+    """
+    for carta in baralho:
+        if in_range(pos_mouse[0], carta["posicao"][0], carta["posicao"][1])\
+            and in_range(pos_mouse[1], carta["posicao"][2], carta["posicao"][3]):
+            return baralho[carta]
+
+def treat_mouse_click(baralho, cartas_viradas):
+    """Trata o click do mouse.
+    """
+    pos_mouse = list(pygame.mouse.get_pos())
+
+    for carta in baralho:
+        if is_inside_card(baralho, pos_mouse):
+            if not carta["virada"]:
+                carta["virada"] = True
+                cartas_viradas.append(card_selected(baralho, pos_mouse))
+
+def treat_events(baralho, cartas_viradas):
     """Trata os eventos ocorridos entre cada quadro.
     """
+    if not pygame.MOUSEBUTTONUP:
+        return False
     for event in pygame.event.get():
         if event.type == pygame.QUIT:
             return True
-    
+        if pygame.mouse.get_pressed():
+            treat_mouse_click(baralho, cartas_viradas)
     return False
-
 
 def create_cards(valor):
     """Cria as cartas
@@ -53,7 +101,7 @@ def create_cards(valor):
     Returns:
         [dict]: Retorna um dicionario representado a carta, na forma:
         {
-            "valor": 0,
+            "valor": número de 0 a 9,
             "virada: Valor booleano, para representar se a carta esta virada ou nao.
             False -> baixo, True-> cima
             "imagem_baixo": A imagem da carta virada para baixo
@@ -75,7 +123,6 @@ def create_objects():
     """
     baralho = {}
     numeros = [0, 1, 2, 3, 4, 5, 6, 7, 8, 9] * 2
-    
 
     random.shuffle(numeros)
 
@@ -85,18 +132,18 @@ def create_objects():
 
     return baralho
 
-
 def run_loop(display):
     """Roda o loop do jogo
 
     Args:
         display (pygame.surface): [display do jogo]
     """
-    objects = create_objects()
+    baralho = create_objects()
     cartas_viradas = []
 
     while True:
-
+        if treat_events(baralho, cartas_viradas) == True:
+            break
         set_frame_rate(60)
 
 def main():
