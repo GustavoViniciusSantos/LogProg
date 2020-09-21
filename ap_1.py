@@ -40,7 +40,17 @@ def set_frame_rate(fps):
     """
     CLOCK.tick(fps)
 
+def in_range(value, inf_limit, sup_limit):
+    """Confere se um determinado valor está presente em um intervalo de dois inteiros.
 
+    Args:
+        inf_limit (int): valor inferior do intervalo
+        sup_limit (int): valor superior do intervalo
+    """
+    valores_possiveis = range(inf_limit, sup_limit + 1)
+    if value in valores_possiveis:
+        return True
+    return False
 
 def is_inside_card(baralho, pos_mouse):
     """Verifica se o clique foi dentro da carta
