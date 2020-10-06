@@ -7,8 +7,8 @@ import pygame
 from pygame import display
 
 # Constantes de Configuração do jogo
-DISPLAY_WIDTH = 1200
-DISPLAY_HEIGHT = 800
+DISPLAY_WIDTH = 800
+DISPLAY_HEIGHT = 600
 
 CLOCK = pygame.time.Clock()
 
@@ -20,14 +20,14 @@ COLORS = {
     "babyblue": (51, 204, 255)
 }
 
-BORDER_MARGIN = 1
+BORDER_MARGIN = 10
 BORDER_THICKNESS = 3
 
-CARD_MARGIN_WIDTH = 5
-CARD_MARGIN_HEIGHT = 5
+CARD_WIDTH = 90
+CARD_HEIGHT = 50
 
-CARD_WIDTH = 131.25
-CARD_HEIGTH = 148
+CARD_MARGIN_BORDER = 90
+CARD_MARGIN_CARD = 50
 
 def start_game():
     """Inicializa o jogo
@@ -90,7 +90,7 @@ def card_selected(baralho, pos_mouse):
 def treat_mouse_click(baralho, cartas_viradas):
     """Trata o click do mouse.
     """
-    pos_mouse = list(pygame.mouse.get_pos())
+    pos_mouse = pygame.mouse.get_pos()
 
     for indice in range(20):
         if is_inside_card(baralho, pos_mouse):
@@ -101,14 +101,14 @@ def treat_mouse_click(baralho, cartas_viradas):
 def treat_events(baralho, cartas_viradas):
     """Trata os eventos ocorridos entre cada quadro.
     """
-    if not pygame.MOUSEBUTTONUP:
+    if pygame.MOUSEBUTTONUP:
+        for event in pygame.event.get():
+            if event.type == pygame.QUIT:
+                return True
+            elif pygame.mouse.get_pressed():
+                print("mouse pressed")
+                treat_mouse_click(baralho, cartas_viradas)
         return False
-    for event in pygame.event.get():
-        if event.type == pygame.QUIT:
-            return True
-        if pygame.mouse.get_pressed():
-            treat_mouse_click(baralho, cartas_viradas)
-    return False
 
 def draw_carta_down(display, baralho, coluna, linha):
     """Desenha a carta virada para baixo
@@ -124,9 +124,9 @@ def draw_carta_down(display, baralho, coluna, linha):
     """
     rect = pygame.Rect(
         int(linha * CARD_WIDTH + (linha - 1) * CARD_WIDTH),
-        int(coluna * CARD_HEIGTH + (coluna - 1) * CARD_HEIGTH),
+        int(coluna * CARD_HEIGHT + (coluna - 1) * CARD_HEIGHT),
         int(CARD_WIDTH),
-        int(CARD_HEIGTH) 
+        int(CARD_HEIGHT) 
     )
     
     imagem = pygame.draw.rect(
@@ -149,12 +149,12 @@ def draw_carta_up(valor, display, baralho, coluna, linha):
         imagem(pygame.surface): imagem da carta virada para cima
     """
     LINHA = linha * CARD_WIDTH + (linha - 1) * CARD_WIDTH
-    COLUNA = coluna * CARD_HEIGTH + (coluna - 1) * CARD_HEIGTH
+    COLUNA = coluna * CARD_HEIGHT + (coluna - 1) * CARD_HEIGHT
 
     rect = pygame.Rect(int(linha * CARD_WIDTH + (linha - 1) * CARD_WIDTH), \
-            int(coluna * CARD_HEIGTH + (coluna - 1) * CARD_HEIGTH), \
+            int(coluna * CARD_HEIGHT + (coluna - 1) * CARD_HEIGHT), \
             CARD_WIDTH, \
-            CARD_HEIGTH 
+            CARD_HEIGHT 
     )
 
     pygame.draw.rect(
@@ -165,7 +165,7 @@ def draw_carta_up(valor, display, baralho, coluna, linha):
     font = pygame.font.SysFont(None, 50)
     #ponto central carta = 75 largura x 92.5 altura
     text = font.render(str(valor), True, COLORS.get("black"))
-    display.blit(text, (int(LINHA + (CARD_WIDTH / 2 )),int(COLUNA + (CARD_HEIGTH / 2))))
+    display.blit(text, (int(LINHA + (CARD_WIDTH / 2 )),int(COLUNA + (CARD_HEIGHT / 2))))
 
 def draw_borders(display):
     """Desenha a borda do jogo
@@ -193,15 +193,16 @@ def pos_card(coluna, linha):
         linha (int): linha em que a carta fica
     """
     pos = []
-    pos_x = coluna * CARD_MARGIN_WIDTH + (coluna - 1) * int(CARD_WIDTH)
-    pos.append(pos_x)
-    pos_x_final = pos_x + CARD_WIDTH
+    pos_x_inicial = BORDER_MARGIN + CARD_MARGIN_BORDER + \
+        coluna * (CARD_WIDTH + CARD_MARGIN_CARD)
+    pos.append(pos_x_inicial)
+    pos_x_final = pos_x_inicial + CARD_WIDTH
     pos.append(pos_x_final)
-    pos_y = linha * CARD_MARGIN_HEIGHT + (linha - 1) * CARD_HEIGTH
-    pos.append(pos_y)
-    pos_y_final = pos_y + CARD_HEIGTH
+    pos_y_inicial = BORDER_MARGIN + CARD_MARGIN_BORDER + \
+        linha * (CARD_HEIGHT + CARD_MARGIN_CARD)
+    pos.append(pos_y_inicial)
+    pos_y_final = pos_y_inicial + CARD_HEIGHT
     pos.append(pos_y_final)
-
     return pos
 
 def occult_cards(cartas_viradas, baralho):
@@ -260,35 +261,20 @@ def create_objects(display):
         carta = create_cards(numeros[indice])
         baralho[indice] = carta
         coluna = indice % 4
-        if indice in range(0, 5):
+        if indice in range(0, 4):
             linha = 1
-            if coluna == 0:
-                coluna = 4
-                baralho[indice]["posicao"] = pos_card(coluna, linha)
             baralho[indice]["posicao"] = pos_card(coluna, linha)
-        elif indice in range(5, 9):
+        elif indice in range(4, 8):
             linha = 2
-            if coluna == 0:
-                coluna = 4
-                baralho[indice]["posicao"] = pos_card(coluna, linha)
             baralho[indice]["posicao"] = pos_card(coluna, linha)
-        elif indice in (9, 13):
+        elif indice in range(8, 12):
             linha = 3
-            if coluna == 0:
-                coluna = 4
-                baralho[indice]["posicao"] = pos_card(coluna, linha)
             baralho[indice]["posicao"] = pos_card(coluna, linha)
-        elif indice in (13, 17):
+        elif indice in range(12, 16):
             linha = 4
-            if coluna == 0:
-                coluna = 4
-                baralho[indice]["posicao"] = pos_card(coluna, linha)
             baralho[indice]["posicao"] = pos_card(coluna, linha)
         else:
             linha = 5
-            if coluna == 0:
-                coluna = 4
-                baralho[indice]["posicao"] = pos_card(coluna, linha)
             baralho[indice]["posicao"] = pos_card(coluna, linha)
 
     return baralho
@@ -306,25 +292,25 @@ def render_screen(display, baralho):
     for indice in range(20):
         valor = baralho[indice]["valor"]
         coluna = indice % 4
-        if indice in range(0, 5):
+        if indice in range(0, 4):
             linha = 1
             if baralho[indice]["virada"] == True:
                 draw_carta_up(valor, display, baralho, coluna, linha)
             else:
                 draw_carta_down(display, baralho, coluna, linha)
-        elif indice in range(5, 9):
+        elif indice in range(4, 8):
             linha = 2
             if baralho[indice]["virada"] == True:
                 draw_carta_up(valor, display, baralho, coluna, linha)
             else:
                 draw_carta_down(display, baralho, coluna, linha)
-        elif indice in (9, 13):
+        elif indice in range(8, 12):
             linha = 3
             if baralho[indice]["virada"] == True:
                 draw_carta_up(valor, display, baralho, coluna, linha)
             else:
                 draw_carta_down(display, baralho, coluna, linha)
-        elif indice in (13, 17):
+        elif indice in range(12, 16):
             linha = 4
             if baralho[indice]["virada"] == True:
                 draw_carta_up(valor, display, baralho, coluna, linha)
